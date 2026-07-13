@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>الدقهلية للدواجن — متابعة العمالة</title>
+<title>الدقهلية للدواجن — متابعة الموظفين</title>
 <meta name="application-name" content="الدقهلية للدواجن">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -184,15 +184,15 @@ td.actions{display:flex;gap:6px}
   <div class="card logo-card">
     <div class="company-logo">🐔</div>
     <h1>الدقهلية للدواجن</h1>
-    <div class="subtitle">نظام متابعة العمالة الميدانية</div>
+    <div class="subtitle">نظام متابعة الموظفين الميدانيين</div>
     <div id="netStatus" style="font-size:12px;font-weight:700;margin-bottom:14px;color:#64748b">⏳ جاري الاتصال بالسحابة...</div>
     <div class="big-btns">
-      <button class="b-in" onclick="showWorkerEntry()"><span class="ic">👷</span>دخول العامل<br><span style="font-size:11px;font-weight:600;opacity:.9">حضور / انصراف / عملاء</span></button>
+      <button class="b-in" onclick="showWorkerEntry()"><span class="ic">👷</span>دخول الموظف<br><span style="font-size:11px;font-weight:600;opacity:.9">حضور / انصراف / عملاء</span></button>
       <button class="b-admin" onclick="showAdminLogin()"><span class="ic">🗂️</span>الإدارة<br><span style="font-size:11px;font-weight:600;opacity:.9">لوحة المتابعة</span></button>
     </div>
   </div>
   <div id="workerEntry" class="card hidden">
-    <h2>👷 دخول العامل</h2>
+    <h2>👷 دخول الموظف</h2>
     <div class="field">
       <label>كود الموظف</label>
       <input id="wCode" type="text" placeholder="مثال: 1024" autocomplete="off" inputmode="numeric">
@@ -202,6 +202,19 @@ td.actions{display:flex;gap:6px}
   </div>
   <div id="adminLogin" class="card hidden">
     <h2>🗂️ دخول الإدارة</h2>
+    <div class="field">
+      <label>الإدارة</label>
+      <select id="aDept">
+        <option value="">— اختر الإدارة —</option>
+        <option value="HR">HR</option>
+        <option value="الجودة">الجودة</option>
+        <option value="عمليات البيع">عمليات البيع</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>اسم المستخدم</label>
+      <input id="aUser" type="text" autocomplete="off" placeholder="اكتب اسم المستخدم" onkeydown="if(event.key==='Enter')document.getElementById('aPass').focus()">
+    </div>
     <div class="field">
       <label>كلمة المرور</label>
       <input id="aPass" type="password" autocomplete="off" onkeydown="if(event.key==='Enter')adminLogin()">
@@ -332,7 +345,7 @@ td.actions{display:flex;gap:6px}
       <span class="logo"><span style="font-size:22px">🐔</span></span>
       <span>الدقهلية للدواجن</span>
     </div>
-    <div class="who"><span>الإدارة</span><button class="logout" onclick="logout()">خروج</button></div>
+    <div class="who"><span id="adminWho">الإدارة</span><button class="logout" onclick="logout()">خروج</button></div>
   </header>
   <div class="wrap">
     <div class="tabs">
@@ -340,11 +353,12 @@ td.actions{display:flex;gap:6px}
       <button data-tab="records" onclick="switchTab('records')">📋 الحضور</button>
       <button data-tab="visits" onclick="switchTab('visits')">🤝 الزيارات</button>
       <button data-tab="odometer" onclick="switchTab('odometer')">🚗 العداد</button>
-      <button data-tab="workers" onclick="switchTab('workers')">👥 العمال</button>
-      <button data-tab="farms" onclick="switchTab('farms')">🌾 المزارع</button>
+      <button data-tab="workers" onclick="switchTab('workers')">👥 الموظفين</button>
+      <button data-tab="farms" class="full-only" onclick="switchTab('farms')">🌾 المزارع</button>
       <button data-tab="reports" onclick="switchTab('reports')">📊 التقارير</button>
+      <button data-tab="dashboard" class="full-only" onclick="switchTab('dashboard')">📈 لوحة الأداء</button>
       <button data-tab="map" onclick="switchTab('map')">🗺️ الخريطة</button>
-      <button data-tab="settings" onclick="switchTab('settings')">⚙️ الإعدادات</button>
+      <button data-tab="settings" class="full-only" onclick="switchTab('settings')">⚙️ الإعدادات</button>
     </div>
 
     <!-- TODAY -->
@@ -359,24 +373,11 @@ td.actions{display:flex;gap:6px}
     <!-- RECORDS -->
     <div id="tab-records" class="tab-pane hidden">
       <div class="card">
-        <h2>➕ تسجيل يدوي</h2>
-        <div class="row">
-          <div class="field"><label>العامل</label><select id="mWorker"></select></div>
-          <div class="field"><label>النوع</label><select id="mType"><option value="in">حضور</option><option value="out">انصراف</option></select></div>
-          <div class="field"><label>التاريخ والوقت</label><input id="mTime" type="datetime-local"></div>
-        </div>
-        <div class="row" style="align-items:center">
-          <button class="btn sec sm" onclick="captureManualLoc()">📍 موقعي الحالي</button>
-          <span id="mLocLabel" class="muted">لم يتم التقاط موقع</span>
-        </div>
-        <div style="margin-top:12px"><button class="btn" onclick="addManualRecord()">حفظ</button></div>
-      </div>
-      <div class="card">
         <h2>📋 السجلات</h2>
         <div class="toolbar">
           <div class="field"><label>من</label><input id="fFrom" type="date" onchange="renderRecords()"></div>
           <div class="field"><label>إلى</label><input id="fTo" type="date" onchange="renderRecords()"></div>
-          <div class="field"><label>العامل</label><select id="fWorker" onchange="renderRecords()"></select></div>
+          <div class="field"><label>الموظف</label><select id="fWorker" onchange="renderRecords()"></select></div>
           <button class="btn sec sm" onclick="exportRecordsExcel()">⬇️ Excel</button>
         </div>
         <div class="tbl-wrap"><table id="recTbl"></table></div>
@@ -390,7 +391,7 @@ td.actions{display:flex;gap:6px}
         <div class="toolbar">
           <div class="field"><label>من</label><input id="vfFrom" type="date" onchange="renderAdminVisits()"></div>
           <div class="field"><label>إلى</label><input id="vfTo" type="date" onchange="renderAdminVisits()"></div>
-          <div class="field"><label>العامل</label><select id="vfWorker" onchange="renderAdminVisits()"></select></div>
+          <div class="field"><label>الموظف</label><select id="vfWorker" onchange="renderAdminVisits()"></select></div>
           <button class="btn sec sm" onclick="exportVisitsExcel()">⬇️ Excel</button>
         </div>
         <div class="tbl-wrap"><table id="visitAdminTbl"></table></div>
@@ -404,7 +405,7 @@ td.actions{display:flex;gap:6px}
         <div class="toolbar">
           <div class="field"><label>من</label><input id="ofFrom" type="date" onchange="renderAdminOdo()"></div>
           <div class="field"><label>إلى</label><input id="ofTo" type="date" onchange="renderAdminOdo()"></div>
-          <div class="field"><label>العامل</label><select id="ofWorker" onchange="renderAdminOdo()"></select></div>
+          <div class="field"><label>الموظف</label><select id="ofWorker" onchange="renderAdminOdo()"></select></div>
           <button class="btn sec sm" onclick="exportOdoExcel()">⬇️ Excel</button>
         </div>
         <div class="tbl-wrap"><table id="odoAdminTbl"></table></div>
@@ -414,8 +415,8 @@ td.actions{display:flex;gap:6px}
 
     <!-- WORKERS -->
     <div id="tab-workers" class="tab-pane hidden">
-      <div class="card">
-        <h2>👥 إضافة / تعديل عامل</h2>
+      <div class="card full-only">
+        <h2>👥 إضافة / تعديل موظف</h2>
         <input type="hidden" id="wEditId">
         <div class="row">
           <div class="field"><label>الاسم</label><input id="wfName" type="text"></div>
@@ -423,7 +424,7 @@ td.actions{display:flex;gap:6px}
           <div class="field"><label>التليفون</label><input id="wfPhone" type="text"></div>
         </div>
         <div class="row">
-          <div class="field"><label>القسم</label><input id="wfDept" type="text"></div>
+          <div class="field"><label>الإدارة التابع لها</label><select id="wfDept"><option value="">— اختر —</option><option value="HR">HR</option><option value="الجودة">الجودة</option><option value="عمليات البيع">عمليات البيع</option></select></div>
           <div class="field"><label>المزرعة</label><select id="wfFarm"></select></div>
         </div>
         <button class="btn" onclick="saveWorker()">حفظ</button>
@@ -434,7 +435,7 @@ td.actions{display:flex;gap:6px}
         <button class="btn gray sm" onclick="downloadWorkerTemplate()">📄 نموذج</button>
       </div>
       <div class="card">
-        <h2>قائمة العمال (<span id="wCount">0</span>)</h2>
+        <h2>قائمة الموظفين (<span id="wCount">0</span>)</h2>
         <div class="tbl-wrap"><table id="wTbl"></table></div>
       </div>
     </div>
@@ -472,12 +473,40 @@ td.actions{display:flex;gap:6px}
     <!-- REPORTS -->
     <div id="tab-reports" class="tab-pane hidden">
       <div class="card">
+        <h2>📦 التقرير الشامل</h2>
+        <p class="muted" style="margin-bottom:10px">تقرير مجمع بكل البيانات (موظفين، حضور، عدادات، زيارات) — كل مدير بيطلع تقرير إدارته.</p>
+        <button class="btn green" onclick="exportAllExcel()">📊 Excel شامل</button>
+        <button class="btn amber" onclick="exportPdfReport()">📄 PDF شامل (بالصور)</button>
+      </div>
+      <div class="card">
         <h2>📊 تقرير شهري</h2>
         <div class="toolbar">
           <div class="field"><label>الشهر</label><input id="rMonth" type="month" onchange="renderReport()"></div>
           <button class="btn sec sm" onclick="exportReportExcel()">⬇️ Excel</button>
         </div>
         <div class="tbl-wrap"><table id="repTbl"></table></div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD (HR فقط) -->
+    <div id="tab-dashboard" class="tab-pane hidden">
+      <div class="card">
+        <h2>📈 لوحة مقارنة الأداء</h2>
+        <p class="muted" style="margin-bottom:10px">مقارنة بين الموظفين حسب عدد الزيارات والعملاء والأماكن والحضور والكيلومترات خلال الفترة.</p>
+        <div class="toolbar">
+          <div class="field"><label>من</label><input id="dbFrom" type="date" onchange="renderDashboard()"></div>
+          <div class="field"><label>إلى</label><input id="dbTo" type="date" onchange="renderDashboard()"></div>
+          <button class="btn sec sm" onclick="exportDashboardExcel()">⬇️ Excel</button>
+        </div>
+        <div class="stats" id="dbStats"></div>
+      </div>
+      <div class="card">
+        <h2>🏆 الأكثر نشاطاً (بعدد الزيارات)</h2>
+        <div id="dbBars"></div>
+      </div>
+      <div class="card">
+        <h2>جدول المقارنة التفصيلي</h2>
+        <div class="tbl-wrap"><table id="dbTbl"></table></div>
       </div>
     </div>
 
@@ -495,8 +524,8 @@ td.actions{display:flex;gap:6px}
     <!-- SETTINGS -->
     <div id="tab-settings" class="tab-pane hidden">
       <div class="card">
-        <h2>📥 استيراد تقرير عامل</h2>
-        <p class="muted" style="margin-bottom:12px">استورد الملف الأسبوعي اللي العامل بعته.</p>
+        <h2>📥 استيراد تقرير موظف</h2>
+        <p class="muted" style="margin-bottom:12px">استورد الملف الأسبوعي اللي الموظف بعته.</p>
         <button class="btn sec" onclick="document.getElementById('recImportFile').click()">📥 استيراد ملف</button>
         <input type="file" id="recImportFile" accept=".json" class="hidden" onchange="importRecords(event)">
         <div id="importPreview" class="hidden" style="margin-top:16px">
@@ -509,11 +538,9 @@ td.actions{display:flex;gap:6px}
         </div>
       </div>
       <div class="card">
-        <h2>🔐 كلمة المرور</h2>
-        <div class="row">
-          <div class="field"><label>الجديدة</label><input id="newPass" type="password"></div>
-        </div>
-        <button class="btn" onclick="changePass()">تحديث</button>
+        <h2>🔐 مستخدمي الإدارة</h2>
+        <div id="adminUsersInfo" class="muted" style="font-size:13px"></div>
+        <div class="muted" style="font-size:11px;margin-top:6px">إضافة أو تعديل المستخدمين وكلمات المرور بيتم من قائمة ADMIN_USERS في أول ملف الكود، وبعدها ترفع الملف على GitHub.</div>
       </div>
       <div class="card">
         <h2>💾 نسخة احتياطية</h2>
@@ -545,6 +572,27 @@ td.actions{display:flex;gap:6px}
 =================================================== */
 const SUPABASE_URL='https://tjlsbnuyckjoavkpjzkq.supabase.co';
 const SUPABASE_KEY='sb_publishable_fnwcYtjQO7kemUQkJ5IqhQ_Db_OQoJO';
+
+/* ===================================================
+   👥 مستخدمي الإدارة (6 خانات)
+   - عشان تضيف مستخدم جديد: شيل علامتي // من أول السطر
+     واكتب الاسم والباسورد بين علامات التنصيص
+   - الاسم مش حساس للحروف الكبيرة/الصغيرة
+   - الصلاحيات هتتضاف هنا لاحقاً لكل مستخدم
+=================================================== */
+/* الإدارات المتاحة في النظام */
+const DEPARTMENTS=['HR','الجودة','عمليات البيع'];
+/* لكل مستخدم: الاسم، الباسورد، الإدارة اللي تابع لها،
+   والصلاحية role: 'full' = صلاحية كاملة (يشوف كل حاجة ويضيف ويحذف)
+                  'dept' = يشوف موظفين إدارته فقط (عرض بس) */
+const ADMIN_USERS=[
+  {user:'taha zaki',          pass:'2026',   dept:'HR',           role:'full'},
+  {user:'ahmed aboamer',      pass:'2026',   dept:'HR',           role:'full'},
+  {user:'mohamed noureldin',  pass:'123456', dept:'عمليات البيع', role:'dept'},
+  {user:'hussen shokba',      pass:'1397',   dept:'الجودة',       role:'dept'},
+  // {user:'',  pass:'',  dept:'',  role:'dept'},   // ← الخانة الخامسة (فاضية)
+  // {user:'',  pass:'',  dept:'',  role:'dept'},   // ← الخانة السادسة (فاضية)
+];
 
 const DB_KEYS = {
   workers:'fwa_workers', farms:'fwa_farms', records:'fwa_records',
@@ -768,7 +816,7 @@ async function workerLogin(){
   if(!code){ toast('اكتب الكود'); return; }
   let w=workers.find(x=>String(x.code).trim()===code);
   if(!w&&sb){
-    // ممكن الإدارة ضافته حالاً — جدّد قائمة العمال من السحابة وحاول تاني
+    // ممكن الإدارة ضافته حالاً — جدّد قائمة الموظفين من السحابة وحاول تاني
     toast('⏳ بنتأكد من السحابة...');
     try{ const {data}=await sb.from('workers').select('*'); if(data){ workers=data; lsSave(DB_KEYS.workers,workers); } }catch(e){}
     w=workers.find(x=>String(x.code).trim()===code);
@@ -788,9 +836,29 @@ async function workerLogin(){
   document.getElementById('vrTo').value=todayKey();
   renderWorkerToday(); renderWorkerOdoToday(); renderVisitTodayList();
 }
+let currentAdmin=null;
+function isFullAdmin(){ return !!(currentAdmin&&currentAdmin.role==='full'); }
+function visWorkers(){ if(!currentAdmin||isFullAdmin()) return workers; return workers.filter(w=>(w.dept||'').trim()===currentAdmin.dept); }
+function visIds(){ return new Set(visWorkers().map(w=>w.id)); }
+function applyPermissions(){
+  const full=isFullAdmin();
+  document.querySelectorAll('.full-only').forEach(el=>el.classList.toggle('hidden',!full));
+  const who=document.getElementById('adminWho');
+  if(who&&currentAdmin) who.textContent='👤 '+currentAdmin.user+' — '+currentAdmin.dept+(full?' (صلاحية كاملة)':'');
+}
 function adminLogin(){
+  const dept=document.getElementById('aDept').value;
+  const u=document.getElementById('aUser').value.trim().toLowerCase();
   const p=document.getElementById('aPass').value;
-  if(p!==adminPass){ toast('كلمة المرور غلط'); return; }
+  if(!dept){ toast('اختر الإدارة الأول'); return; }
+  if(!u){ toast('اكتب اسم المستخدم'); return; }
+  if(!p){ toast('اكتب كلمة المرور'); return; }
+  const acc=ADMIN_USERS.find(a=>a.user&&a.user.trim().toLowerCase()===u&&a.pass===p);
+  if(!acc){ toast('❌ اسم المستخدم أو كلمة المرور غلط'); return; }
+  if(acc.dept!==dept){ toast('❌ تسجيل خاطئ — المستخدم ده مش تابع للإدارة دي',3500); return; }
+  currentAdmin=acc;
+  applyPermissions();
+  toast('أهلاً '+acc.user+' 👋');
   document.getElementById('entry').classList.add('hidden');
   document.getElementById('adminView').classList.remove('hidden');
   initAdmin();
@@ -1018,13 +1086,13 @@ function initAdmin(){
   const today=todayKey();
   document.getElementById('rMonth').value=today.slice(0,7);
   document.getElementById('mapDate').value=today;
-  document.getElementById('mTime').value=nowLocalInput();
   document.getElementById('ofFrom').value=today; document.getElementById('ofTo').value=today;
   document.getElementById('vfFrom').value=today; document.getElementById('vfTo').value=today;
+  document.getElementById('dbFrom').value=today.slice(0,7)+'-01'; document.getElementById('dbTo').value=today;
   refreshAll(); switchTab('today');
 }
 function nowLocalInput(){ const d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes()); }
-function refreshAll(){ fillWorkerSelects(); fillFarmSelects(); renderToday(); renderRecords(); renderWorkers(); renderFarms(); renderReport(); renderAdminOdo(); renderAdminVisits(); }
+function refreshAll(){ fillWorkerSelects(); fillFarmSelects(); renderToday(); renderRecords(); renderWorkers(); renderFarms(); renderReport(); renderAdminOdo(); renderAdminVisits(); renderAdminUsers(); }
 let mapInited=false,leafMap=null,mapLayer=null;
 function switchTab(tab){
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
@@ -1034,11 +1102,11 @@ function switchTab(tab){
   if(tab==='map') renderMap();
   if(tab==='odometer') renderAdminOdo();
   if(tab==='visits') renderAdminVisits();
+  if(tab==='dashboard') renderDashboard();
 }
 function fillWorkerSelects(){
-  const base='<option value="">— اختر —</option>'+workers.map(w=>'<option value="'+w.id+'">'+w.name+' ('+w.code+')</option>').join('');
-  const all='<option value="">كل العمال</option>'+workers.map(w=>'<option value="'+w.id+'">'+w.name+'</option>').join('');
-  document.getElementById('mWorker').innerHTML=base;
+  const vw=visWorkers();
+  const all='<option value="">كل الموظفين</option>'+vw.map(w=>'<option value="'+w.id+'">'+w.name+'</option>').join('');
   ['fWorker','ofWorker','vfWorker'].forEach(id=>document.getElementById(id).innerHTML=all);
 }
 function fillFarmSelects(){
@@ -1051,15 +1119,16 @@ function fillFarmSelects(){
 =================================================== */
 function renderToday(){
   const tk=todayKey(); document.getElementById('todayDate').textContent='('+tk+')';
-  const todays=records.filter(r=>dayKey(r.timestamp)===tk);
+  const vw=visWorkers(), vset=visIds();
+  const todays=records.filter(r=>dayKey(r.timestamp)===tk&&vset.has(r.workerId));
   const presentIds=[...new Set(todays.filter(r=>r.type==='in').map(r=>r.workerId))];
-  const absent=Math.max(0,workers.length-presentIds.length);
+  const absent=Math.max(0,vw.length-presentIds.length);
   document.getElementById('todayStats').innerHTML=
-    '<div class="stat"><div class="n">'+workers.length+'</div><div class="l">إجمالي العمال</div></div>'+
+    '<div class="stat"><div class="n">'+vw.length+'</div><div class="l">إجمالي الموظفين</div></div>'+
     '<div class="stat good"><div class="n">'+presentIds.length+'</div><div class="l">حاضر</div></div>'+
     '<div class="stat bad"><div class="n">'+absent+'</div><div class="l">لم يسجّل</div></div>'+
-    '<div class="stat warn"><div class="n">'+visits.filter(v=>v.day===tk).length+'</div><div class="l">زيارة عميل اليوم</div></div>';
-  const rows=workers.map(w=>{
+    '<div class="stat warn"><div class="n">'+visits.filter(v=>v.day===tk&&vset.has(v.workerId)).length+'</div><div class="l">زيارة عميل اليوم</div></div>';
+  const rows=vw.map(w=>{
     const wr=todays.filter(r=>r.workerId===w.id).sort((a,b)=>a.timestamp-b.timestamp);
     const ins=wr.filter(r=>r.type==='in'),outs=wr.filter(r=>r.type==='out');
     const fi=ins[0],lo=outs[outs.length-1];
@@ -1067,37 +1136,28 @@ function renderToday(){
     const prs=ins.length>0;
     return '<tr><td>'+w.name+'</td><td>'+w.code+'</td><td>'+(prs?'<span class="badge present">حاضر</span>':'<span class="badge absent">غائب</span>')+'</td><td>'+(fi?fmtTime(fi.timestamp):'—')+'</td><td>'+(lo?fmtTime(lo.timestamp):'—')+'</td><td>'+hrs+'</td></tr>';
   }).join('');
-  document.getElementById('todayTbl').innerHTML='<thead><tr><th>العامل</th><th>الكود</th><th>الحالة</th><th>حضور</th><th>انصراف</th><th>الساعات</th></tr></thead><tbody>'+(rows||'<tr><td colspan="6" class="empty">ضيف عمال الأول</td></tr>')+'</tbody>';
+  document.getElementById('todayTbl').innerHTML='<thead><tr><th>الموظف</th><th>الكود</th><th>الحالة</th><th>حضور</th><th>انصراف</th><th>الساعات</th></tr></thead><tbody>'+(rows||'<tr><td colspan="6" class="empty">ضيف موظفين الأول</td></tr>')+'</tbody>';
 }
 
 /* ===================================================
    ADMIN — RECORDS
 =================================================== */
-function captureManualLoc(){ toast('بنحدد الموقع...'); getLocation().then(l=>{ manualLoc=l; document.getElementById('mLocLabel').textContent='📍 '+l.lat.toFixed(5)+', '+l.lng.toFixed(5); }).catch(e=>{ manualLoc=null; document.getElementById('mLocLabel').textContent='⚠️ '+e.message; }); }
-function addManualRecord(){
-  const wid=document.getElementById('mWorker').value; if(!wid){ toast('اختر العامل'); return; }
-  const w=workerById(wid), type=document.getElementById('mType').value;
-  const tv=document.getElementById('mTime').value, ts=tv?new Date(tv).getTime():Date.now();
-  const rec={id:uid(),workerId:w.id,type,timestamp:ts,lat:manualLoc?manualLoc.lat:null,lng:manualLoc?manualLoc.lng:null,accuracy:manualLoc?manualLoc.accuracy:null,source:'manual'};
-  records.push(rec);
-  lsSave(DB_KEYS.records,records); dbUpsert('records',rec); manualLoc=null; document.getElementById('mLocLabel').textContent='لم يتم التقاط موقع';
-  document.getElementById('mTime').value=nowLocalInput(); toast('اتسجّل ✔️'); renderRecords(); renderToday();
-}
 function getFilteredRecords(){
   const from=document.getElementById('fFrom').value,to=document.getElementById('fTo').value,wf=document.getElementById('fWorker').value;
-  return records.filter(r=>{ const dk=dayKey(r.timestamp); if(from&&dk<from)return false; if(to&&dk>to)return false; if(wf&&r.workerId!==wf)return false; return true; }).sort((a,b)=>b.timestamp-a.timestamp);
+  const vset=visIds();
+  return records.filter(r=>{ if(!vset.has(r.workerId))return false; const dk=dayKey(r.timestamp); if(from&&dk<from)return false; if(to&&dk>to)return false; if(wf&&r.workerId!==wf)return false; return true; }).sort((a,b)=>b.timestamp-a.timestamp);
 }
 function renderRecords(){
   const rs=getFilteredRecords();
   const rows=rs.map(r=>{ const w=workerById(r.workerId); if(!w)return ''; const coords=r.lat!=null?'<a href="https://maps.google.com/?q='+r.lat+','+r.lng+'" target="_blank" style="color:var(--blue)">📍</a>':'—';
-    return '<tr><td>'+w.name+'</td><td>'+(r.type==='in'?'🟢 حضور':'🟠 انصراف')+'</td><td>'+fmtDateTime(r.timestamp)+'</td><td>'+coords+'</td><td>'+(r.source==='self'?'العامل':'يدوي')+'</td><td class="actions"><button class="btn red sm" onclick="delRecord(\''+r.id+'\')">حذف</button></td></tr>'; }).join('');
-  document.getElementById('recTbl').innerHTML='<thead><tr><th>العامل</th><th>النوع</th><th>الوقت</th><th>الموقع</th><th>المصدر</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan="6" class="empty">لا توجد سجلات</td></tr>')+'</tbody>';
+    return '<tr><td>'+w.name+'</td><td>'+(r.type==='in'?'🟢 حضور':'🟠 انصراف')+'</td><td>'+fmtDateTime(r.timestamp)+'</td><td>'+coords+'</td><td>'+(r.source==='self'?'الموظف':'يدوي')+'</td><td class="actions">'+(isFullAdmin()?'<button class="btn red sm" onclick="delRecord(\''+r.id+'\')">حذف</button>':'')+'</td></tr>'; }).join('');
+  document.getElementById('recTbl').innerHTML='<thead><tr><th>الموظف</th><th>النوع</th><th>الوقت</th><th>الموقع</th><th>المصدر</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan="6" class="empty">لا توجد سجلات</td></tr>')+'</tbody>';
 }
 function delRecord(id){ if(!confirm('تحذف؟'))return; records=records.filter(r=>r.id!==id); lsSave(DB_KEYS.records,records); dbDelete('records',id); renderRecords(); renderToday(); }
 function exportRecordsExcel(){
   const rs=getFilteredRecords();
-  const aoa=[['العامل','الكود','النوع','التاريخ','الوقت','المصدر','Latitude','Longitude']];
-  rs.forEach(r=>{ const w=workerById(r.workerId); if(!w)return; aoa.push([w.name,w.code,r.type==='in'?'حضور':'انصراف',dayKey(r.timestamp),fmtTime(r.timestamp),r.source==='self'?'العامل':'يدوي',r.lat??'',r.lng??'']); });
+  const aoa=[['الموظف','الكود','النوع','التاريخ','الوقت','المصدر','Latitude','Longitude']];
+  rs.forEach(r=>{ const w=workerById(r.workerId); if(!w)return; aoa.push([w.name,w.code,r.type==='in'?'حضور':'انصراف',dayKey(r.timestamp),fmtTime(r.timestamp),r.source==='self'?'الموظف':'يدوي',r.lat??'',r.lng??'']); });
   const ws=XLSX.utils.aoa_to_sheet(aoa); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'الحضور'); XLSX.writeFile(wb,'سجل_الحضور_'+todayKey()+'.xlsx');
 }
 
@@ -1106,19 +1166,21 @@ function exportRecordsExcel(){
 =================================================== */
 async function renderAdminVisits(){
   const from=document.getElementById('vfFrom').value,to=document.getElementById('vfTo').value,wf=document.getElementById('vfWorker').value;
-  const filt=visits.filter(v=>{ if(from&&v.day<from)return false; if(to&&v.day>to)return false; if(wf&&v.workerId!==wf)return false; return true; }).sort((a,b)=>b.timestamp-a.timestamp);
+  const vset=visIds();
+  const filt=visits.filter(v=>{ if(!vset.has(v.workerId))return false; if(from&&v.day<from)return false; if(to&&v.day>to)return false; if(wf&&v.workerId!==wf)return false; return true; }).sort((a,b)=>b.timestamp-a.timestamp);
   const ids=filt.filter(v=>v.photoId).map(v=>v.photoId);
   const photos={}; for(const pid of ids){ const p=await photoLoad(pid); if(p) photos[pid]=p; }
   const rows=filt.map(v=>{ const w=workerById(v.workerId); if(!w)return '';
     const loc=v.lat?'<a href="https://maps.google.com/?q='+v.lat+','+v.lng+'" target="_blank" style="color:var(--blue)">📍</a>':'—';
     const thumb=v.photoId&&photos[v.photoId]?'<img class="odo-thumb" src="'+photos[v.photoId]+'" onclick="openImgModal(this.src)" alt="">':'—';
     return '<tr><td>'+w.name+'</td><td>'+w.code+'</td><td>'+v.day+'</td><td>'+fmtTime(v.timestamp)+'</td><td><b>'+v.clientName+'</b></td><td>'+(v.phone||'—')+'</td><td style="max-width:200px;white-space:normal">'+(v.notes||'—')+'</td><td>'+loc+'</td><td>'+thumb+'</td></tr>'; }).join('');
-  document.getElementById('visitAdminTbl').innerHTML='<thead><tr><th>العامل</th><th>الكود</th><th>اليوم</th><th>الوقت</th><th>العميل</th><th>التليفون</th><th>الملاحظات</th><th>الموقع</th><th>الصورة</th></tr></thead><tbody>'+(rows||'<tr><td colspan="9" class="empty">لا توجد زيارات</td></tr>')+'</tbody>';
+  document.getElementById('visitAdminTbl').innerHTML='<thead><tr><th>الموظف</th><th>الكود</th><th>اليوم</th><th>الوقت</th><th>العميل</th><th>التليفون</th><th>الملاحظات</th><th>الموقع</th><th>الصورة</th></tr></thead><tbody>'+(rows||'<tr><td colspan="9" class="empty">لا توجد زيارات</td></tr>')+'</tbody>';
 }
 function exportVisitsExcel(){
   const from=document.getElementById('vfFrom').value,to=document.getElementById('vfTo').value,wf=document.getElementById('vfWorker').value;
-  const filt=visits.filter(v=>{ if(from&&v.day<from)return false; if(to&&v.day>to)return false; if(wf&&v.workerId!==wf)return false; return true; }).sort((a,b)=>b.timestamp-a.timestamp);
-  const aoa=[['العامل','الكود','اليوم','الوقت','اسم العميل','التليفون','الملاحظات','Latitude','Longitude']];
+  const vset=visIds();
+  const filt=visits.filter(v=>{ if(!vset.has(v.workerId))return false; if(from&&v.day<from)return false; if(to&&v.day>to)return false; if(wf&&v.workerId!==wf)return false; return true; }).sort((a,b)=>b.timestamp-a.timestamp);
+  const aoa=[['الموظف','الكود','اليوم','الوقت','اسم العميل','التليفون','الملاحظات','Latitude','Longitude']];
   filt.forEach(v=>{ const w=workerById(v.workerId); if(!w)return; aoa.push([w.name,w.code,v.day,fmtTime(v.timestamp),v.clientName,v.phone||'',v.notes||'',v.lat??'',v.lng??'']); });
   const ws=XLSX.utils.aoa_to_sheet(aoa); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'الزيارات'); XLSX.writeFile(wb,'زيارات_'+todayKey()+'.xlsx');
 }
@@ -1128,7 +1190,8 @@ function exportVisitsExcel(){
 =================================================== */
 async function renderAdminOdo(){
   const from=document.getElementById('ofFrom').value,to=document.getElementById('ofTo').value,wf=document.getElementById('ofWorker').value;
-  const filt=odoReadings.filter(r=>{ if(from&&r.day<from)return false; if(to&&r.day>to)return false; if(wf&&r.workerId!==wf)return false; return true; });
+  const vset=visIds();
+  const filt=odoReadings.filter(r=>{ if(!vset.has(r.workerId))return false; if(from&&r.day<from)return false; if(to&&r.day>to)return false; if(wf&&r.workerId!==wf)return false; return true; });
   const groups={};
   filt.forEach(r=>{ const k=r.workerId+'|'+r.day; (groups[k]=groups[k]||{workerId:r.workerId,day:r.day,entries:[]}).entries.push(r); });
   const ids=filt.filter(r=>r.photoId).map(r=>r.photoId);
@@ -1142,14 +1205,15 @@ async function renderAdminOdo(){
     const et=eR&&eR.photoId&&photos[eR.photoId]?'<img class="odo-thumb" src="'+photos[eR.photoId]+'" onclick="openImgModal(this.src)">':'—';
     return '<tr><td>'+w.name+'</td><td>'+w.code+'</td><td>'+g.day+'</td><td>'+(sR?sR.value+' <span class="muted">'+fmtTime(sR.timestamp)+'</span>':'—')+'</td><td>'+(eR?eR.value+' <span class="muted">'+fmtTime(eR.timestamp)+'</span>':'—')+'</td><td>'+km+'</td><td>'+st+'</td><td>'+et+'</td></tr>';
   }).join('');
-  document.getElementById('odoAdminTbl').innerHTML='<thead><tr><th>العامل</th><th>الكود</th><th>اليوم</th><th>بداية</th><th>نهاية</th><th>الكيلومترات</th><th>صورة البداية</th><th>صورة النهاية</th></tr></thead><tbody>'+(rows||'<tr><td colspan="8" class="empty">لا توجد قراءات</td></tr>')+'</tbody>';
+  document.getElementById('odoAdminTbl').innerHTML='<thead><tr><th>الموظف</th><th>الكود</th><th>اليوم</th><th>بداية</th><th>نهاية</th><th>الكيلومترات</th><th>صورة البداية</th><th>صورة النهاية</th></tr></thead><tbody>'+(rows||'<tr><td colspan="8" class="empty">لا توجد قراءات</td></tr>')+'</tbody>';
 }
 function exportOdoExcel(){
   const from=document.getElementById('ofFrom').value,to=document.getElementById('ofTo').value,wf=document.getElementById('ofWorker').value;
-  const filt=odoReadings.filter(r=>{ if(from&&r.day<from)return false; if(to&&r.day>to)return false; if(wf&&r.workerId!==wf)return false; return true; });
+  const vset=visIds();
+  const filt=odoReadings.filter(r=>{ if(!vset.has(r.workerId))return false; if(from&&r.day<from)return false; if(to&&r.day>to)return false; if(wf&&r.workerId!==wf)return false; return true; });
   const groups={};
   filt.forEach(r=>{ const k=r.workerId+'|'+r.day; (groups[k]=groups[k]||{workerId:r.workerId,day:r.day,entries:[]}).entries.push(r); });
-  const aoa=[['العامل','الكود','اليوم','قراءة البداية','وقت البداية','قراءة النهاية','وقت النهاية','الكيلومترات']];
+  const aoa=[['الموظف','الكود','اليوم','قراءة البداية','وقت البداية','قراءة النهاية','وقت النهاية','الكيلومترات']];
   Object.values(groups).sort((a,b)=>b.day.localeCompare(a.day)).forEach(g=>{
     const w=workerById(g.workerId); if(!w)return;
     const ents=g.entries.sort((a,b)=>a.timestamp-b.timestamp);
@@ -1163,9 +1227,10 @@ function exportOdoExcel(){
    ADMIN — WORKERS
 =================================================== */
 function renderWorkers(){
-  document.getElementById('wCount').textContent=workers.length;
-  const rows=workers.map(w=>{ const farm=w.farmId?farmById(w.farmId):null; return '<tr><td>'+w.name+'</td><td>'+w.code+'</td><td>'+(w.phone||'—')+'</td><td>'+(w.dept||'—')+'</td><td>'+(farm?farm.name:'—')+'</td><td class="actions"><button class="btn sec sm" onclick="editWorker(\''+w.id+'\')">تعديل</button><button class="btn red sm" onclick="delWorker(\''+w.id+'\')">حذف</button></td></tr>'; }).join('');
-  document.getElementById('wTbl').innerHTML='<thead><tr><th>الاسم</th><th>الكود</th><th>التليفون</th><th>القسم</th><th>المزرعة</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan="6" class="empty">لا يوجد عمال</td></tr>')+'</tbody>';
+  const vw=visWorkers(), full=isFullAdmin();
+  document.getElementById('wCount').textContent=vw.length;
+  const rows=vw.map(w=>{ const farm=w.farmId?farmById(w.farmId):null; const acts=full?'<button class="btn sec sm" onclick="editWorker(\''+w.id+'\')">تعديل</button><button class="btn red sm" onclick="delWorker(\''+w.id+'\')">حذف</button>':''; return '<tr><td>'+w.name+'</td><td>'+w.code+'</td><td>'+(w.phone||'—')+'</td><td>'+(w.dept||'—')+'</td><td>'+(farm?farm.name:'—')+'</td><td class="actions">'+acts+'</td></tr>'; }).join('');
+  document.getElementById('wTbl').innerHTML='<thead><tr><th>الاسم</th><th>الكود</th><th>التليفون</th><th>القسم</th><th>المزرعة</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan="6" class="empty">لا يوجد موظفين</td></tr>')+'</tbody>';
 }
 function saveWorker(){
   const name=document.getElementById('wfName').value.trim(), code=document.getElementById('wfCode').value.trim();
@@ -1180,11 +1245,11 @@ function saveWorker(){
 function editWorker(id){ const w=workerById(id); document.getElementById('wEditId').value=w.id; document.getElementById('wfName').value=w.name; document.getElementById('wfCode').value=w.code; document.getElementById('wfPhone').value=w.phone||''; document.getElementById('wfDept').value=w.dept||''; document.getElementById('wfFarm').value=w.farmId||''; document.getElementById('wCancelBtn').style.display='inline-flex'; window.scrollTo({top:0,behavior:'smooth'}); }
 function resetWorkerForm(){ ['wEditId','wfName','wfCode','wfPhone','wfDept'].forEach(i=>document.getElementById(i).value=''); document.getElementById('wfFarm').value=''; document.getElementById('wCancelBtn').style.display='none'; }
 function delWorker(id){ if(!confirm('تحذف؟'))return; workers=workers.filter(w=>w.id!==id); lsSave(DB_KEYS.workers,workers); dbDelete('workers',id); fillWorkerSelects(); renderWorkers(); renderToday(); }
-function downloadWorkerTemplate(){ const ws=XLSX.utils.aoa_to_sheet([['الاسم','كود الموظف','التليفون','القسم'],['أحمد محمد','1001','01000000000','ميداني']]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'العمال'); XLSX.writeFile(wb,'نموذج_عمال.xlsx'); }
+function downloadWorkerTemplate(){ const ws=XLSX.utils.aoa_to_sheet([['الاسم','كود الموظف','التليفون','القسم'],['أحمد محمد','1001','01000000000','ميداني']]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'الموظفين'); XLSX.writeFile(wb,'نموذج_موظفين.xlsx'); }
 function importWorkers(ev){
   const file=ev.target.files[0]; if(!file)return;
   const reader=new FileReader();
-  reader.onload=e=>{ try{ const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'}); const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}); const newRows=[]; rows.forEach(r=>{ const name=(r['الاسم']||'').toString().trim(),code=(r['كود الموظف']||r['الكود']||'').toString().trim(); if(!name||!code||workers.find(w=>String(w.code).trim()===code))return; const obj={id:uid(),name,code,phone:(r['التليفون']||'').toString().trim(),dept:(r['القسم']||'').toString().trim(),farmId:null}; workers.push(obj); newRows.push(obj); }); lsSave(DB_KEYS.workers,workers); dbUpsert('workers',newRows); fillWorkerSelects(); renderWorkers(); renderToday(); toast('اتضاف '+newRows.length+' عامل'); }catch(err){ toast('الملف مش مظبوط'); } };
+  reader.onload=e=>{ try{ const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'}); const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}); const newRows=[]; rows.forEach(r=>{ const name=(r['الاسم']||'').toString().trim(),code=(r['كود الموظف']||r['الكود']||'').toString().trim(); if(!name||!code||workers.find(w=>String(w.code).trim()===code))return; const obj={id:uid(),name,code,phone:(r['التليفون']||'').toString().trim(),dept:(r['القسم']||'').toString().trim(),farmId:null}; workers.push(obj); newRows.push(obj); }); lsSave(DB_KEYS.workers,workers); dbUpsert('workers',newRows); fillWorkerSelects(); renderWorkers(); renderToday(); toast('اتضاف '+newRows.length+' موظف'); }catch(err){ toast('الملف مش مظبوط'); } };
   reader.readAsArrayBuffer(file); ev.target.value='';
 }
 
@@ -1206,9 +1271,60 @@ function parseCoordsPaste(){ const v=document.getElementById('ffPaste').value.tr
 /* ===================================================
    ADMIN — REPORTS
 =================================================== */
-function buildReport(month){ return workers.map(w=>{ const wr=records.filter(r=>r.workerId===w.id&&dayKey(r.timestamp).slice(0,7)===month); const days={}; wr.forEach(r=>{ const d=dayKey(r.timestamp); (days[d]=days[d]||[]).push(r); }); let presentDays=0,totalHours=0; Object.values(days).forEach(list=>{ list.sort((a,b)=>a.timestamp-b.timestamp); const ins=list.filter(r=>r.type==='in'); if(ins.length)presentDays++; const fi=ins[0],lo=list.filter(r=>r.type==='out').slice(-1)[0]; if(fi&&lo&&lo.timestamp>fi.timestamp)totalHours+=(lo.timestamp-fi.timestamp)/3600000; }); return {name:w.name,code:w.code,presentDays,totalHours:totalHours.toFixed(1)}; }); }
-function renderReport(){ const month=document.getElementById('rMonth').value||todayKey().slice(0,7); const rep=buildReport(month); const rows=rep.map(r=>'<tr><td>'+r.name+'</td><td>'+r.code+'</td><td>'+r.presentDays+'</td><td>'+r.totalHours+' س</td></tr>').join(''); document.getElementById('repTbl').innerHTML='<thead><tr><th>العامل</th><th>الكود</th><th>أيام الحضور</th><th>إجمالي الساعات</th></tr></thead><tbody>'+(rows||'<tr><td colspan="4" class="empty">لا توجد بيانات</td></tr>')+'</tbody>'; }
-function exportReportExcel(){ const month=document.getElementById('rMonth').value||todayKey().slice(0,7); const rep=buildReport(month); const aoa=[['العامل','الكود','أيام الحضور','إجمالي الساعات'],...rep.map(r=>[r.name,r.code,r.presentDays,r.totalHours])]; const ws=XLSX.utils.aoa_to_sheet(aoa); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'تقرير '+month); XLSX.writeFile(wb,'تقرير_'+month+'.xlsx'); }
+function buildReport(month){ return visWorkers().map(w=>{ const wr=records.filter(r=>r.workerId===w.id&&dayKey(r.timestamp).slice(0,7)===month); const days={}; wr.forEach(r=>{ const d=dayKey(r.timestamp); (days[d]=days[d]||[]).push(r); }); let presentDays=0,totalHours=0; Object.values(days).forEach(list=>{ list.sort((a,b)=>a.timestamp-b.timestamp); const ins=list.filter(r=>r.type==='in'); if(ins.length)presentDays++; const fi=ins[0],lo=list.filter(r=>r.type==='out').slice(-1)[0]; if(fi&&lo&&lo.timestamp>fi.timestamp)totalHours+=(lo.timestamp-fi.timestamp)/3600000; }); return {name:w.name,code:w.code,presentDays,totalHours:totalHours.toFixed(1)}; }); }
+function renderReport(){ const month=document.getElementById('rMonth').value||todayKey().slice(0,7); const rep=buildReport(month); const rows=rep.map(r=>'<tr><td>'+r.name+'</td><td>'+r.code+'</td><td>'+r.presentDays+'</td><td>'+r.totalHours+' س</td></tr>').join(''); document.getElementById('repTbl').innerHTML='<thead><tr><th>الموظف</th><th>الكود</th><th>أيام الحضور</th><th>إجمالي الساعات</th></tr></thead><tbody>'+(rows||'<tr><td colspan="4" class="empty">لا توجد بيانات</td></tr>')+'</tbody>'; }
+function exportReportExcel(){ const month=document.getElementById('rMonth').value||todayKey().slice(0,7); const rep=buildReport(month); const aoa=[['الموظف','الكود','أيام الحضور','إجمالي الساعات'],...rep.map(r=>[r.name,r.code,r.presentDays,r.totalHours])]; const ws=XLSX.utils.aoa_to_sheet(aoa); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'تقرير '+month); XLSX.writeFile(wb,'تقرير_'+month+'.xlsx'); }
+
+/* ===================================================
+   ADMIN — DASHBOARD (لوحة مقارنة الأداء — HR فقط)
+=================================================== */
+function buildDashboard(){
+  const from=document.getElementById('dbFrom').value, to=document.getElementById('dbTo').value;
+  const inR=d=>(!from||d>=from)&&(!to||d<=to);
+  return workers.map(w=>{
+    const wv=visits.filter(v=>v.workerId===w.id&&inR(v.day));
+    const clients=new Set(wv.map(v=>(v.clientName||'').trim().toLowerCase()).filter(Boolean)).size;
+    const places=new Set(wv.filter(v=>v.lat!=null).map(v=>v.lat.toFixed(3)+','+v.lng.toFixed(3))).size;
+    const wr=records.filter(r=>r.workerId===w.id&&inR(dayKey(r.timestamp)));
+    const days={}; wr.forEach(r=>{const d=dayKey(r.timestamp);(days[d]=days[d]||[]).push(r);});
+    let presentDays=0,totalHours=0;
+    Object.values(days).forEach(list=>{ list.sort((a,b)=>a.timestamp-b.timestamp); const ins=list.filter(r=>r.type==='in'); if(ins.length)presentDays++; const fi=ins[0],lo=list.filter(r=>r.type==='out').slice(-1)[0]; if(fi&&lo&&lo.timestamp>fi.timestamp)totalHours+=(lo.timestamp-fi.timestamp)/3600000; });
+    const wo=odoReadings.filter(r=>r.workerId===w.id&&inR(r.day));
+    const byDay={}; wo.forEach(r=>{(byDay[r.day]=byDay[r.day]||[]).push(r);});
+    let km=0;
+    Object.values(byDay).forEach(list=>{ list.sort((a,b)=>a.timestamp-b.timestamp); const sR=list.find(r=>r.type==='start'),eR=[...list].reverse().find(r=>r.type==='end'); if(sR&&eR&&eR.value>sR.value)km+=eR.value-sR.value; });
+    return {name:w.name,code:w.code,dept:w.dept||'—',visits:wv.length,clients,places,presentDays,hours:+totalHours.toFixed(1),km};
+  }).sort((a,b)=>b.visits-a.visits||b.clients-a.clients||b.presentDays-a.presentDays);
+}
+function renderDashboard(){
+  if(!isFullAdmin()) return;
+  const rep=buildDashboard();
+  const tot=(k)=>rep.reduce((a,r)=>a+r[k],0);
+  document.getElementById('dbStats').innerHTML=
+    '<div class="stat"><div class="n">'+tot('visits')+'</div><div class="l">إجمالي الزيارات</div></div>'+
+    '<div class="stat good"><div class="n">'+tot('clients')+'</div><div class="l">عملاء مسجلين</div></div>'+
+    '<div class="stat warn"><div class="n">'+tot('places')+'</div><div class="l">أماكن مختلفة</div></div>'+
+    '<div class="stat"><div class="n">'+tot('km').toLocaleString('ar-EG')+'</div><div class="l">كيلومترات</div></div>';
+  const withV=rep.filter(r=>r.visits>0);
+  const maxV=withV.length?withV[0].visits:0;
+  const medals=['🥇','🥈','🥉'];
+  document.getElementById('dbBars').innerHTML=withV.length?withV.slice(0,10).map((r,i)=>
+    '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:3px"><span>'+(medals[i]||(i+1)+'.')+' '+r.name+' <span class="muted" style="font-weight:600">('+r.dept+')</span></span><span style="color:var(--blue-d)">'+r.visits+' زيارة — '+r.clients+' عميل</span></div>'+
+    '<div style="background:#e2e8f0;border-radius:99px;height:14px;overflow:hidden"><div style="height:100%;border-radius:99px;width:'+Math.max(4,Math.round(r.visits/maxV*100))+'%;background:linear-gradient(90deg,var(--blue),var(--blue-d))"></div></div></div>'
+  ).join(''):'<p class="empty">مفيش زيارات مسجلة في الفترة دي</p>';
+  const rows=rep.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+r.name+'</td><td>'+r.code+'</td><td>'+r.dept+'</td><td><b>'+r.visits+'</b></td><td>'+r.clients+'</td><td>'+r.places+'</td><td>'+r.presentDays+'</td><td>'+r.hours+' س</td><td>'+r.km.toLocaleString('ar-EG')+' كم</td></tr>').join('');
+  document.getElementById('dbTbl').innerHTML='<thead><tr><th>#</th><th>الموظف</th><th>الكود</th><th>الإدارة</th><th>الزيارات</th><th>عملاء مختلفين</th><th>أماكن مختلفة</th><th>أيام حضور</th><th>ساعات</th><th>كيلومترات</th></tr></thead><tbody>'+(rows||'<tr><td colspan="10" class="empty">لا توجد بيانات</td></tr>')+'</tbody>';
+}
+function exportDashboardExcel(){
+  if(!isFullAdmin()) return;
+  const rep=buildDashboard();
+  const from=document.getElementById('dbFrom').value||'البداية', to=document.getElementById('dbTo').value||'النهاية';
+  const aoa=[['الترتيب','الموظف','الكود','الإدارة','عدد الزيارات','عملاء مختلفين','أماكن مختلفة','أيام الحضور','إجمالي الساعات','الكيلومترات'],
+    ...rep.map((r,i)=>[i+1,r.name,r.code,r.dept,r.visits,r.clients,r.places,r.presentDays,r.hours,r.km])];
+  const ws=XLSX.utils.aoa_to_sheet(aoa); const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'مقارنة الأداء');
+  XLSX.writeFile(wb,'لوحة_الأداء_'+from+'_إلى_'+to+'.xlsx');
+}
 
 /* ===================================================
    ADMIN — MAP
@@ -1219,7 +1335,8 @@ function renderMap(){
   if(mapLayer)leafMap.removeLayer(mapLayer); mapLayer=L.layerGroup().addTo(leafMap);
   const pts=[]; farms.forEach(f=>{ if(typeof f.lat==='number'){L.marker([f.lat,f.lng]).addTo(mapLayer).bindPopup('🌾 '+f.name);L.circle([f.lat,f.lng],{radius:f.radius,color:'#1a5c96',fillColor:'#93c5fd',fillOpacity:.15}).addTo(mapLayer);pts.push([f.lat,f.lng]);} });
   const date=document.getElementById('mapDate').value||todayKey();
-  records.filter(r=>dayKey(r.timestamp)===date&&r.lat!=null).forEach(r=>{ const w=workerById(r.workerId); L.circleMarker([r.lat,r.lng],{radius:8,color:'#fff',weight:2,fillColor:r.type==='in'?'#16a34a':'#ea580c',fillOpacity:1}).addTo(mapLayer).bindPopup((w?w.name:'')+' — '+(r.type==='in'?'حضور':'انصراف')+' '+fmtTime(r.timestamp)); pts.push([r.lat,r.lng]); });
+  const vset=visIds();
+  records.filter(r=>dayKey(r.timestamp)===date&&r.lat!=null&&vset.has(r.workerId)).forEach(r=>{ const w=workerById(r.workerId); L.circleMarker([r.lat,r.lng],{radius:8,color:'#fff',weight:2,fillColor:r.type==='in'?'#16a34a':'#ea580c',fillOpacity:1}).addTo(mapLayer).bindPopup((w?w.name:'')+' — '+(r.type==='in'?'حضور':'انصراف')+' '+fmtTime(r.timestamp)); pts.push([r.lat,r.lng]); });
   if(pts.length)leafMap.fitBounds(pts,{padding:[40,40],maxZoom:15}); setTimeout(()=>leafMap.invalidateSize(),200);
 }
 
@@ -1271,7 +1388,7 @@ function confirmImport(){
   if(!pendingImportData)return;
   const {worker:wInfo,target,records:rc,odo,visits:vs}=pendingImportData;
   let tgt=target;
-  if(!tgt){ tgt={id:uid(),name:wInfo.name||'عامل '+wInfo.code,code:wInfo.code||'',phone:'',dept:'',farmId:null}; workers.push(tgt); lsSave(DB_KEYS.workers,workers); dbUpsert('workers',tgt); }
+  if(!tgt){ tgt={id:uid(),name:wInfo.name||'موظف '+wInfo.code,code:wInfo.code||'',phone:'',dept:'',farmId:null}; workers.push(tgt); lsSave(DB_KEYS.workers,workers); dbUpsert('workers',tgt); }
   const exRec=new Set(records.map(r=>r.id)); const addRec=[];
   rc.forEach(r=>{ if(!exRec.has(r.id)){ const row={...r,workerId:tgt.id}; delete row.photo; records.push(row); addRec.push(row); } }); lsSave(DB_KEYS.records,records); dbUpsert('records',addRec);
   const exOdo=new Set(odoReadings.map(r=>r.id)); const addOdo=[];
@@ -1285,7 +1402,11 @@ function cancelImport(){ pendingImportData=null; document.getElementById('import
 /* ===================================================
    SETTINGS
 =================================================== */
-function changePass(){ const p=document.getElementById('newPass').value; if(p.length<3){toast('قصيرة');return;} adminPass=p; localStorage.setItem(DB_KEYS.pass,p); dbUpsert('settings',{key:'admin_pass',value:p}); document.getElementById('newPass').value=''; toast('اتغيّرت ✔️'); }
+function renderAdminUsers(){
+  const el=document.getElementById('adminUsersInfo'); if(!el) return;
+  const act=ADMIN_USERS.filter(a=>a.user&&a.user.trim());
+  el.innerHTML='المستخدم الحالي: <b style="color:var(--blue-d)">'+(currentAdmin?currentAdmin.user:'—')+'</b><br>المستخدمين المفعّلين: '+act.map(a=>a.user).join('، ')+' ('+act.length+' من 6)';
+}
 
 /* ===================================================
    الأرشفة الشهرية — بتمسح صور الشهور القديمة من السحابة بس
@@ -1323,25 +1444,29 @@ async function archiveOldPhotos(){
    تصدير Excel شامل — كل البيانات في ملف واحد بشيتات منفصلة
 =================================================== */
 function exportAllExcel(){
-  if(!workers.length&&!records.length&&!odoReadings.length&&!visits.length&&!farms.length){ toast('مفيش بيانات محفوظة'); return; }
+  const vw=visWorkers(), vset=visIds();
+  const scope=isFullAdmin()?'':('_'+currentAdmin.dept);
+  if(!vw.length&&!records.length&&!odoReadings.length&&!visits.length&&!farms.length){ toast('مفيش بيانات محفوظة'); return; }
   exportedThisSession=true;
   const wb=XLSX.utils.book_new();
-  const wsW=XLSX.utils.aoa_to_sheet([['الاسم','الكود','التليفون','القسم','المزرعة'],
-    ...workers.map(w=>{const f=w.farmId?farmById(w.farmId):null;return [w.name,w.code,w.phone||'',w.dept||'',f?f.name:''];})]);
-  XLSX.utils.book_append_sheet(wb,wsW,'العمال');
-  const wsR=XLSX.utils.aoa_to_sheet([['التاريخ','العامل','الكود','النوع','الوقت','خط العرض','خط الطول'],
-    ...[...records].sort((a,b)=>a.timestamp-b.timestamp).map(r=>{const w=workerById(r.workerId);return [dayKey(r.timestamp),w?w.name:'غير معروف',w?w.code:'',r.type==='in'?'حضور':'انصراف',fmtTime(r.timestamp),r.lat!=null?r.lat:'',r.lng!=null?r.lng:''];})]);
+  const wsW=XLSX.utils.aoa_to_sheet([['الاسم','الكود','التليفون','الإدارة','المزرعة'],
+    ...vw.map(w=>{const f=w.farmId?farmById(w.farmId):null;return [w.name,w.code,w.phone||'',w.dept||'',f?f.name:''];})]);
+  XLSX.utils.book_append_sheet(wb,wsW,'الموظفين');
+  const wsR=XLSX.utils.aoa_to_sheet([['التاريخ','الموظف','الكود','النوع','الوقت','خط العرض','خط الطول'],
+    ...[...records].filter(r=>vset.has(r.workerId)).sort((a,b)=>a.timestamp-b.timestamp).map(r=>{const w=workerById(r.workerId);return [dayKey(r.timestamp),w?w.name:'غير معروف',w?w.code:'',r.type==='in'?'حضور':'انصراف',fmtTime(r.timestamp),r.lat!=null?r.lat:'',r.lng!=null?r.lng:''];})]);
   XLSX.utils.book_append_sheet(wb,wsR,'الحضور والانصراف');
-  const wsO=XLSX.utils.aoa_to_sheet([['التاريخ','العامل','الكود','النوع','قراءة العداد','الوقت'],
-    ...[...odoReadings].sort((a,b)=>a.timestamp-b.timestamp).map(r=>{const w=workerById(r.workerId);return [r.day,w?w.name:'غير معروف',w?w.code:'',r.type==='start'?'بداية اليوم':'نهاية اليوم',r.value,fmtTime(r.timestamp)];})]);
+  const wsO=XLSX.utils.aoa_to_sheet([['التاريخ','الموظف','الكود','النوع','قراءة العداد','الوقت'],
+    ...[...odoReadings].filter(r=>vset.has(r.workerId)).sort((a,b)=>a.timestamp-b.timestamp).map(r=>{const w=workerById(r.workerId);return [r.day,w?w.name:'غير معروف',w?w.code:'',r.type==='start'?'بداية اليوم':'نهاية اليوم',r.value,fmtTime(r.timestamp)];})]);
   XLSX.utils.book_append_sheet(wb,wsO,'عداد الكيلومترات');
-  const wsV=XLSX.utils.aoa_to_sheet([['التاريخ','العامل','الكود','اسم العميل','التليفون','ملاحظات','الوقت'],
-    ...[...visits].sort((a,b)=>a.timestamp-b.timestamp).map(v=>{const w=workerById(v.workerId);return [v.day,w?w.name:'غير معروف',w?w.code:'',v.clientName,v.phone||'',v.notes||'',fmtTime(v.timestamp)];})]);
+  const wsV=XLSX.utils.aoa_to_sheet([['التاريخ','الموظف','الكود','اسم العميل','التليفون','ملاحظات','الوقت'],
+    ...[...visits].filter(v=>vset.has(v.workerId)).sort((a,b)=>a.timestamp-b.timestamp).map(v=>{const w=workerById(v.workerId);return [v.day,w?w.name:'غير معروف',w?w.code:'',v.clientName,v.phone||'',v.notes||'',fmtTime(v.timestamp)];})]);
   XLSX.utils.book_append_sheet(wb,wsV,'زيارات العملاء');
-  const wsF=XLSX.utils.aoa_to_sheet([['الاسم','النطاق (متر)','Latitude','Longitude'],
-    ...farms.map(f=>[f.name,f.radius,f.lat!=null?f.lat:'',f.lng!=null?f.lng:''])]);
-  XLSX.utils.book_append_sheet(wb,wsF,'المزارع');
-  XLSX.writeFile(wb,'بيانات_شاملة_'+todayKey()+'.xlsx');
+  if(isFullAdmin()){
+    const wsF=XLSX.utils.aoa_to_sheet([['الاسم','النطاق (متر)','Latitude','Longitude'],
+      ...farms.map(f=>[f.name,f.radius,f.lat!=null?f.lat:'',f.lng!=null?f.lng:''])]);
+    XLSX.utils.book_append_sheet(wb,wsF,'المزارع');
+  }
+  XLSX.writeFile(wb,'بيانات_شاملة'+scope+'_'+todayKey()+'.xlsx');
   toast('اتصدّر ملف Excel شامل ✔️');
 }
 
@@ -1350,13 +1475,17 @@ function exportAllExcel(){
    skipPass=true لما يتنادى من جوه لوحة الإدارة
 =================================================== */
 async function exportPdfReport(){
-  if(!workers.length&&!records.length&&!odoReadings.length&&!visits.length){ toast('مفيش بيانات محفوظة'); return; }
+  const vw=visWorkers(), vset=visIds();
+  if(!vw.length&&!records.length&&!odoReadings.length&&!visits.length){ toast('مفيش بيانات محفوظة'); return; }
   exportedThisSession=true;
   toast('⏳ بنجهز التقرير والصور...',4000);
   // تحميل كل الصور من IndexedDB
+  const fRec=records.filter(r=>vset.has(r.workerId));
+  const fOdo=odoReadings.filter(r=>vset.has(r.workerId));
+  const fVis=visits.filter(v=>vset.has(v.workerId));
   const odoPhotos={}, visPhotos={};
-  for(const r of odoReadings){ if(r.photoId&&!odoPhotos[r.photoId]){ const ph=await photoLoad(r.photoId); if(ph) odoPhotos[r.photoId]=ph; } }
-  for(const v of visits){ if(v.photoId&&!visPhotos[v.photoId]){ const ph=await photoLoad(v.photoId); if(ph) visPhotos[v.photoId]=ph; } }
+  for(const r of fOdo){ if(r.photoId&&!odoPhotos[r.photoId]){ const ph=await photoLoad(r.photoId); if(ph) odoPhotos[r.photoId]=ph; } }
+  for(const v of fVis){ if(v.photoId&&!visPhotos[v.photoId]){ const ph=await photoLoad(v.photoId); if(ph) visPhotos[v.photoId]=ph; } }
   const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   // الخلية العادية بتتعمل escape — خلية الصورة بتتبعت {html:...} عشان تترندر زي ما هي
   const cell=c=>(c&&typeof c==='object'&&c.html!==undefined)?c.html:esc(c);
@@ -1364,10 +1493,10 @@ async function exportPdfReport(){
     ? '<table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+cell(c)+'</td>').join('')+'</tr>').join('')+'</tbody></table>'
     : '<p class="empty">لا توجد بيانات</p>';
   const imgCell=src=>src?{html:'<img class="rep-img" src="'+src+'" alt="">'}:'—';
-  const wRows=workers.map(w=>{const f=w.farmId?farmById(w.farmId):null;return [w.name,w.code,w.phone||'—',w.dept||'—',f?f.name:'—'];});
-  const rRows=[...records].sort((a,b)=>a.timestamp-b.timestamp).map(r=>{const w=workerById(r.workerId);return [dayKey(r.timestamp),w?w.name:'غير معروف',w?w.code:'—',r.type==='in'?'حضور':'انصراف',fmtTime(r.timestamp)];});
-  const oRows=[...odoReadings].sort((a,b)=>a.timestamp-b.timestamp).map(r=>{const w=workerById(r.workerId);return [r.day,w?w.name:'غير معروف',r.type==='start'?'بداية اليوم':'نهاية اليوم',r.value.toLocaleString('ar-EG')+' كم',fmtTime(r.timestamp),imgCell(r.photoId?odoPhotos[r.photoId]:null)];});
-  const vRows=[...visits].sort((a,b)=>a.timestamp-b.timestamp).map(v=>{const w=workerById(v.workerId);return [v.day,w?w.name:'غير معروف',v.clientName,v.phone||'—',v.notes||'—',imgCell(v.photoId?visPhotos[v.photoId]:null)];});
+  const wRows=vw.map(w=>{const f=w.farmId?farmById(w.farmId):null;return [w.name,w.code,w.phone||'—',w.dept||'—',f?f.name:'—'];});
+  const rRows=[...fRec].sort((a,b)=>a.timestamp-b.timestamp).map(r=>{const w=workerById(r.workerId);return [dayKey(r.timestamp),w?w.name:'غير معروف',w?w.code:'—',r.type==='in'?'حضور':'انصراف',fmtTime(r.timestamp)];});
+  const oRows=[...fOdo].sort((a,b)=>a.timestamp-b.timestamp).map(r=>{const w=workerById(r.workerId);return [r.day,w?w.name:'غير معروف',r.type==='start'?'بداية اليوم':'نهاية اليوم',r.value.toLocaleString('ar-EG')+' كم',fmtTime(r.timestamp),imgCell(r.photoId?odoPhotos[r.photoId]:null)];});
+  const vRows=[...fVis].sort((a,b)=>a.timestamp-b.timestamp).map(v=>{const w=workerById(v.workerId);return [v.day,w?w.name:'غير معروف',v.clientName,v.phone||'—',v.notes||'—',imgCell(v.photoId?visPhotos[v.photoId]:null)];});
   const fRows=farms.map(f=>[f.name,f.radius+' م',f.lat!=null?f.lat.toFixed(5):'—',f.lng!=null?f.lng.toFixed(5):'—']);
   const html='<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>التقرير الشامل — الدقهلية للدواجن</title>'+
     '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">'+
@@ -1386,19 +1515,19 @@ async function exportPdfReport(){
     '@media print{.noprint{display:none}body{padding:0}img{-webkit-print-color-adjust:exact;print-color-adjust:exact}}'+
     '</style></head><body>'+
     '<div class="noprint"><button onclick="window.print()" style="font-family:Cairo,sans-serif;background:#1a5c96;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer">🖨️ طباعة / حفظ PDF</button></div>'+
-    '<h1>🐔 الدقهلية للدواجن — التقرير الشامل لمتابعة العمالة الميدانية</h1>'+
+    '<h1>🐔 الدقهلية للدواجن — التقرير الشامل لمتابعة الموظفين الميدانيين'+(isFullAdmin()?'':' — إدارة '+currentAdmin.dept)+'</h1>'+
     '<div class="sub">تاريخ التصدير: '+fmtDateTime(Date.now())+'</div>'+
     '<div class="stats">'+
-    '<div class="stat"><b>'+workers.length+'</b>عامل</div>'+
-    '<div class="stat"><b>'+records.length+'</b>تسجيل حضور/انصراف</div>'+
-    '<div class="stat"><b>'+odoReadings.length+'</b>قراءة عداد</div>'+
-    '<div class="stat"><b>'+visits.length+'</b>زيارة عميل</div>'+
-    '<div class="stat"><b>'+farms.length+'</b>مزرعة</div></div>'+
-    '<h2>👥 العمال</h2>'+tbl(['الاسم','الكود','التليفون','القسم','المزرعة'],wRows)+
-    '<h2>📍 الحضور والانصراف</h2>'+tbl(['التاريخ','العامل','الكود','النوع','الوقت'],rRows)+
-    '<h2>🚗 عداد الكيلومترات</h2>'+tbl(['التاريخ','العامل','النوع','القراءة','الوقت','صورة العداد'],oRows)+
-    '<h2>🤝 زيارات العملاء</h2>'+tbl(['التاريخ','العامل','اسم العميل','التليفون','ملاحظات','صورة المكان'],vRows)+
-    '<h2>🌾 المزارع</h2>'+tbl(['الاسم','النطاق','Latitude','Longitude'],fRows)+
+    '<div class="stat"><b>'+vw.length+'</b>موظف</div>'+
+    '<div class="stat"><b>'+fRec.length+'</b>تسجيل حضور/انصراف</div>'+
+    '<div class="stat"><b>'+fOdo.length+'</b>قراءة عداد</div>'+
+    '<div class="stat"><b>'+fVis.length+'</b>زيارة عميل</div>'+
+    (isFullAdmin()?'<div class="stat"><b>'+farms.length+'</b>مزرعة</div>':'')+'</div>'+
+    '<h2>👥 الموظفين</h2>'+tbl(['الاسم','الكود','التليفون','القسم','المزرعة'],wRows)+
+    '<h2>📍 الحضور والانصراف</h2>'+tbl(['التاريخ','الموظف','الكود','النوع','الوقت'],rRows)+
+    '<h2>🚗 عداد الكيلومترات</h2>'+tbl(['التاريخ','الموظف','النوع','القراءة','الوقت','صورة العداد'],oRows)+
+    '<h2>🤝 زيارات العملاء</h2>'+tbl(['التاريخ','الموظف','اسم العميل','التليفون','ملاحظات','صورة المكان'],vRows)+
+    (isFullAdmin()?'<h2>🌾 المزارع</h2>'+tbl(['الاسم','النطاق','Latitude','Longitude'],fRows):'')+
     '</body></html>';
   const win=window.open('','_blank');
   if(!win){ toast('اسمح بالنوافذ المنبثقة للموقع'); return; }
